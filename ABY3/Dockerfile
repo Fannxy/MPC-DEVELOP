@@ -1,13 +1,18 @@
 FROM ubuntu:20.04  
 
+# create user.  
+ARG USER="fanxy"
+RUN useradd -m $USER  
+RUN usermod -aG sudo $USER  
+USER $USER
+
 # disable the interactive for location specification.
 ENV DEBIAN_FRONTEND=noninteractive  
 ENV TZ=Asia/Shanghai
   
+# install gcc-9
 RUN apt-get update  
- 
 RUN apt-get install -y g++-9  
-  
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 900 \  
     && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 900 \  
     && update-alternatives --install /usr/bin/cpp cpp-bin /usr/bin/cpp-9 900 \  
@@ -15,6 +20,7 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 900 \
     && update-alternatives --set g++ /usr/bin/g++-9 \  
     && update-alternatives --set cpp-bin /usr/bin/cpp-9  
 
+# install important packages.
 RUN apt-get update && \  
     apt-get install -y iputils-ping && \  
     apt-get install -y htop && \  
@@ -25,12 +31,13 @@ RUN apt-get update && \
     apt-get install -y python3.8 && \ 
     apt-get install -y cmake && \
     apt-get install libssl-dev && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1 && \
     rm -rf /var/lib/apt/lists/* 
 
-WORKDIR /root
+WORKDIR /home/$USER
 
 # cp
-COPY ../packages/cmake-3.18.5.tar.gz /root/
+COPY ../packages/cmake-3.18.5.tar.gz /home/$USER
 RUN tar -zxvf cmake-3.18.5.tar.gz
 
 # upgrade the cmake to 3.18
@@ -40,13 +47,15 @@ RUN ./bootstrap && \
     make install 
 
 RUN rm -rf /usr/local/share/cmake-3.16 && \
+    rm cmake-3.18.5 && \
+    rm cmake-3.18.5.tar.gz && \
     export CMAKE_MODULE_PATH=/usr/local/share/cmake-3.18/Modules && \
     hash -r
 
-WORKDIR /root
+WORKDIR /home/$USER
 
 # setup the ssh.
-COPY ./ssh_aby3 /root/.ssh 
+COPY ./ssh_aby3 /home/$USER/.ssh 
 
 RUN apt-get update && apt-get install -y openssh-server && \  
     mkdir /var/run/sshd && \  
@@ -55,5 +64,9 @@ RUN apt-get update && apt-get install -y openssh-server && \
     echo "export VISIBLE=now" >> /etc/profile
 
 RUN git clone git@github.com:Fannxy/aby3.git
+
+WORKDIR /home/$USER/aby3
+
+RUN python build.py --setup
 
 CMD ["./bin/bash"] 
