@@ -1,11 +1,5 @@
 FROM ubuntu:20.04  
 
-# create user.  
-ARG USER="fanxy"
-RUN useradd -m $USER  
-RUN usermod -aG sudo $USER  
-USER $USER
-
 # disable the interactive for location specification.
 ENV DEBIAN_FRONTEND=noninteractive  
 ENV TZ=Asia/Shanghai
@@ -34,28 +28,25 @@ RUN apt-get update && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1 && \
     rm -rf /var/lib/apt/lists/* 
 
-WORKDIR /home/$USER
+WORKDIR /root/
 
 # cp
-COPY ../packages/cmake-3.18.5.tar.gz /home/$USER
+COPY ./packages/cmake-3.18.5.tar.gz /root/
 RUN tar -zxvf cmake-3.18.5.tar.gz
 
 # upgrade the cmake to 3.18
-WORKDIR cmake-3.18.5  
+WORKDIR /root/cmake-3.18.5  
 RUN ./bootstrap && \  
     make -j$(nproc) && \  
     make install 
 
 RUN rm -rf /usr/local/share/cmake-3.16 && \
-    rm cmake-3.18.5 && \
-    rm cmake-3.18.5.tar.gz && \
+    rm -r /root/cmake-3.18.5 && \
+    rm /root/cmake-3.18.5.tar.gz && \
     export CMAKE_MODULE_PATH=/usr/local/share/cmake-3.18/Modules && \
     hash -r
 
-WORKDIR /home/$USER
-
-# setup the ssh.
-COPY ./ssh_aby3 /home/$USER/.ssh 
+WORKDIR /root/
 
 RUN apt-get update && apt-get install -y openssh-server && \  
     mkdir /var/run/sshd && \  
@@ -63,9 +54,12 @@ RUN apt-get update && apt-get install -y openssh-server && \
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \  
     echo "export VISIBLE=now" >> /etc/profile
 
+# setup the ssh.
+COPY ./ssh_aby3 /root/.ssh 
+
 RUN git clone git@github.com:Fannxy/aby3.git
 
-WORKDIR /home/$USER/aby3
+WORKDIR /root/aby3
 
 RUN python build.py --setup
 
