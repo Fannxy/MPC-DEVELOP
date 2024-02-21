@@ -23,6 +23,7 @@ RUN apt-get update && \
     apt-get install -y vim && \  
     apt-get install -y git && \
     apt-get install -y python3.8 && \ 
+    apt-get install -y pip && \
     apt-get install -y cmake && \
     apt-get install libssl-dev && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1 && \
