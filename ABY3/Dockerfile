@@ -26,6 +26,7 @@ RUN apt-get update && \
     apt-get install -y pip && \
     apt-get install -y cmake && \
     apt-get install libssl-dev && \
+    apt-get install libjsoncpp-dev && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1 && \
     rm -rf /var/lib/apt/lists/* 
 
