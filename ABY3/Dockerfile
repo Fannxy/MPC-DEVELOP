@@ -49,6 +49,20 @@ RUN rm -rf /usr/local/share/cmake-3.16 && \
 
 WORKDIR /root/
 
+# install the MPI3.2
+COPY ./packages/mpich-3.2.tar.gz /root/
+RUN tar -zxvf mpich-3.2.tar.gz
+
+WORKDIR /root/mpich-3.2
+RUN ./configure --disable-fortran && \  
+    make -j$(nproc) && \  
+    make install
+
+RUN rm -rf /root/mpich-3.2 && \
+    rm /root/mpich-3.2.tar.gz
+
+WORKDIR /root/
+
 RUN apt-get update && apt-get install -y openssh-server && \  
     mkdir /var/run/sshd && \  
     echo 'root:password' | chpasswd && \  
