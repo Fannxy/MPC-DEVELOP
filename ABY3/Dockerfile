@@ -55,7 +55,7 @@ COPY ./packages/mpich-3.2.tar.gz /root/
 RUN tar -zxvf mpich-3.2.tar.gz
 
 WORKDIR /root/mpich-3.2
-RUN ./configure --disable-fortran && \  
+RUN ./configure --disable-fortran --prefix /usr/local/ && \  
     make -j$(nproc) && \  
     make install
 
